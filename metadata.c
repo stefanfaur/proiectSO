@@ -44,7 +44,7 @@ void print_metadata(metadata_t m) {
 void close_file(int file_descriptor) {
     if (close(file_descriptor) < 0) {
         perror("Error while closing file: ");
-        exit(-1);
+        exit(EXIT_FAILURE);
     }
 }
 
@@ -52,32 +52,32 @@ void get_image_size(int file_descriptor, int *height, int *width, int *size) {
 
     if(lseek(file_descriptor, 18, SEEK_SET) < 0) {
         perror("Error moving file cursor: ");
-        exit(-1);
+        exit(EXIT_FAILURE);
     }
     
     if(read(file_descriptor, width, 4) < 0) {
         perror("Error reading from file: ");
-        exit(-1);
+        exit(EXIT_FAILURE);
     }
 
     if(lseek(file_descriptor, 22, SEEK_SET) < 0) {
         perror("Error moving file cursor: ");
-        exit(-1);
+        exit(EXIT_FAILURE);
     }
 
     if(read(file_descriptor, height, 4) < 0) {
         perror("Error reading from file: ");
-        exit(-1);
+        exit(EXIT_FAILURE);
     }
 
     if(lseek(file_descriptor, 2, SEEK_SET) < 0) {
         perror("Error moving file cursor: ");
-        exit(-1);
+        exit(EXIT_FAILURE);
     }
     
     if(read(file_descriptor, size, 4) < 0) {
         perror("Error reading from file: ");
-        exit(-1);
+        exit(EXIT_FAILURE);
     }
 }
 
@@ -85,7 +85,7 @@ int open_image(char *file_path) {
     int image_descriptor = open(file_path, O_RDONLY);
     if (image_descriptor < 0) {
         perror("Error while opening file: ");
-        exit(-1);
+        exit(EXIT_FAILURE);
     }
     return image_descriptor;
 }
@@ -93,7 +93,7 @@ int open_image(char *file_path) {
 void get_image_stats(const char *file_name, struct stat *buffer) {
     if(stat(file_name, buffer) < 0) {
         perror("Error getting file stats: ");
-        exit(-1);
+        exit(EXIT_FAILURE);
     }
 }
 
@@ -172,6 +172,22 @@ void initialize_metadata(metadata_t *metadata, const char *file_name) {
     strcpy(metadata->file_name, file_name);
 }
 
+void write_metadata_to_file(const char *file_name, const char *metadata) {
+    int fd = open(file_name, O_WRONLY | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
+    if (fd < 0) {
+        perror("Error opening statistics file: ");
+        exit(EXIT_FAILURE);
+    }
+
+    if (write(fd, metadata, strlen(metadata)) < 0) {
+        perror("Error writing to statistics file: ");
+        close(fd); // Try to close the file even if write failed.
+        exit(EXIT_FAILURE);
+    }
+
+    close(fd);
+}
+
 int main(int argc, char *argv[]) {
     if (argc < 2) {
         fprintf(stderr, "Usage: %s <file_path>\n", argv[0]);
@@ -187,9 +203,12 @@ int main(int argc, char *argv[]) {
     fill_image_properties(&metadata, image_descriptor);
     get_image_stats(metadata.file_name, &stats);
     fill_metadata_from_stat(&stats, &metadata);
-
-    print_metadata(metadata);
-
     close_file(image_descriptor);
+    char *formatted_metadata = format_metadata(metadata);
+    write_metadata_to_file("statistica.txt", format_metadata(metadata));
+    free(formatted_metadata);
+
+    //print_metadata(metadata);
+
     return EXIT_SUCCESS;
 }

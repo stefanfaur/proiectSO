@@ -12,3 +12,6 @@ fi
 # Call the compiled file with "imagine.bmp" argument
 ./prog imagine.bmp
 
+# Output the content of the result file
+cat statistica.txt
+
