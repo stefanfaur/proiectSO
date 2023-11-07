@@ -148,26 +148,48 @@ void get_permissions(struct stat *stats, metadata_t *metadata) {
     mode_to_string(stats->st_mode, metadata->others_access, 'o');
 }
 
+void fill_metadata_from_stat(struct stat *stats, metadata_t *metadata) {
+    metadata->user_id = (int)stats->st_uid;
+    metadata->link_count = (int)stats->st_nlink;
+    
+    strcpy(metadata->last_modified, timespec_to_date(&stats->st_mtimespec));
+    
+    get_permissions(stats, metadata);
+}
+
+void fill_image_properties(metadata_t *metadata, int image_descriptor) {
+    get_image_size(image_descriptor, 
+                   &metadata->height, 
+                   &metadata->width, 
+                   &metadata->size);
+}
+
+void initialize_metadata(metadata_t *metadata, const char *file_name) {
+    if (strlen(file_name) >= sizeof(metadata->file_name)) {
+        fprintf(stderr, "File name too long.\n");
+        exit(EXIT_FAILURE);
+    }
+    strcpy(metadata->file_name, file_name);
+}
+
 int main(int argc, char *argv[]) {
+    if (argc < 2) {
+        fprintf(stderr, "Usage: %s <file_path>\n", argv[0]);
+        exit(EXIT_FAILURE);
+    }
+
     metadata_t metadata;
     struct stat stats;
-    strcpy(metadata.file_name, argv[1]);
+
+    initialize_metadata(&metadata, argv[1]);
 
     int image_descriptor = open_image(metadata.file_name);
-    get_image_size(image_descriptor, 
-                    &metadata.height, 
-                    &metadata.width, 
-                    &metadata.size);
-    get_image_stats(metadata.file_name,
-                    &stats);
-    metadata.user_id = (int)stats.st_uid;
-    metadata.link_count = (int)stats.st_nlink;
-    strcpy(metadata.last_modified, timespec_to_date(&stats.st_mtimespec));
-    get_permissions(&stats, &metadata);
-
+    fill_image_properties(&metadata, image_descriptor);
+    get_image_stats(metadata.file_name, &stats);
+    fill_metadata_from_stat(&stats, &metadata);
 
     print_metadata(metadata);
 
     close_file(image_descriptor);
-    return 0;
+    return EXIT_SUCCESS;
 }
