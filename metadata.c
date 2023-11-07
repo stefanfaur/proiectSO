@@ -121,6 +121,33 @@ char* timespec_to_date(const struct timespec *ts) {
     return date_str;
 }
 
+void mode_to_string(mode_t mode, char *str, char who) {
+    switch (who) {
+        case 'u': // User
+            str[0] = (mode & S_IRUSR) ? 'r' : '-';
+            str[1] = (mode & S_IWUSR) ? 'w' : '-';
+            str[2] = (mode & S_IXUSR) ? 'x' : '-';
+            break;
+        case 'g': // Group
+            str[0] = (mode & S_IRGRP) ? 'r' : '-';
+            str[1] = (mode & S_IWGRP) ? 'w' : '-';
+            str[2] = (mode & S_IXGRP) ? 'x' : '-';
+            break;
+        case 'o': // Others
+            str[0] = (mode & S_IROTH) ? 'r' : '-';
+            str[1] = (mode & S_IWOTH) ? 'w' : '-';
+            str[2] = (mode & S_IXOTH) ? 'x' : '-';
+            break;
+    }
+    str[3] = '\0';
+}
+
+void get_permissions(struct stat *stats, metadata_t *metadata) {
+    mode_to_string(stats->st_mode, metadata->user_access, 'u');
+    mode_to_string(stats->st_mode, metadata->group_access, 'g');
+    mode_to_string(stats->st_mode, metadata->others_access, 'o');
+}
+
 int main(int argc, char *argv[]) {
     metadata_t metadata;
     struct stat stats;
@@ -131,13 +158,13 @@ int main(int argc, char *argv[]) {
                     &metadata.height, 
                     &metadata.width, 
                     &metadata.size);
-    
     get_image_stats(metadata.file_name,
                     &stats);
-
     metadata.user_id = (int)stats.st_uid;
     metadata.link_count = (int)stats.st_nlink;
     strcpy(metadata.last_modified, timespec_to_date(&stats.st_mtimespec));
+    get_permissions(&stats, &metadata);
+
 
     print_metadata(metadata);
 
