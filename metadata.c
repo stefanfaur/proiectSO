@@ -21,7 +21,7 @@ typedef struct metadata_t {
 
 char *format_metadata(metadata_t m) {
     char *buffer = (char *)malloc(200 * sizeof(char));
-    sprintf(buffer, "nume fisier: %39s\ninaltime: %d\nlungime: %d\ndimensiune: %d\nidentificatorul utilizatorului: %d\ntimpul ultimei modificari: %10s\ncontorul de legaturi: %d\ndrepturi de acces user: %3s\ndrepturi de acces grup: %3s\ndrepturi de acces altii: %3s\n",
+    sprintf(buffer, "nume fisier: %s\ninaltime: %d\nlungime: %d\ndimensiune: %d\nidentificatorul utilizatorului: %d\ntimpul ultimei modificari: %10s\ncontorul de legaturi: %d\ndrepturi de acces user: %3s\ndrepturi de acces grup: %3s\ndrepturi de acces altii: %3s\n",
         m.file_name,
         m.height,
         m.width,
@@ -78,8 +78,6 @@ void get_image_size(int file_descriptor, int *height, int *width, int *size) {
         perror("Error reading from file: ");
         exit(-1);
     }
-
-    printf("Width: %d\nHeight: %d\nSize: %d bytes\n", *width, *height, *size);
 }
 
 int open_image(char *file_path) {
@@ -114,6 +112,8 @@ int main(int argc, char *argv[]) {
 
     metadata.user_id = (int)stats.st_uid;
     metadata.link_count = (int)stats.st_nlink;
+
+    print_metadata(metadata);
 
     close_file(image_descriptor);
     return 0;
