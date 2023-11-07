@@ -5,6 +5,7 @@
 #include <string.h>
 #include <sys/types.h>
 #include <sys/stat.h>
+#include "time.h"
 
 typedef struct metadata_t {
     char file_name[40];
@@ -96,6 +97,30 @@ void get_image_stats(const char *file_name, struct stat *buffer) {
     }
 }
 
+char* timespec_to_date(const struct timespec *ts) {
+    // Allocate memory for the date string
+    char *date_str = malloc(11); // DD-MM-YYYY + '\0'
+    if (date_str == NULL) {
+        perror("malloc");
+        return NULL;
+    }
+
+    // Convert timespec seconds to tm struct
+    struct tm lt;
+    if (localtime_r(&(ts->tv_sec), &lt) == NULL) {
+        free(date_str);
+        return NULL;
+    }
+
+    if (strftime(date_str, 11, "%d-%m-%Y", &lt) == 0) {
+        fprintf(stderr, "strftime returned 0");
+        free(date_str);
+        return NULL;
+    }
+
+    return date_str;
+}
+
 int main(int argc, char *argv[]) {
     metadata_t metadata;
     struct stat stats;
@@ -112,6 +137,7 @@ int main(int argc, char *argv[]) {
 
     metadata.user_id = (int)stats.st_uid;
     metadata.link_count = (int)stats.st_nlink;
+    strcpy(metadata.last_modified, timespec_to_date(&stats.st_mtimespec));
 
     print_metadata(metadata);
 
