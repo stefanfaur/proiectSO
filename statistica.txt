@@ -1,55 +1,54 @@
-nume fisier: direct/imagine_4.bmp
-inaltime: 1309
+
+nume fisier: imagine_4.bmp
 lungime: 762
-dimensiune: 2995046
-identificatorul utilizatorului: 501
-timpul ultimei modificari: 19-11-2023
+inaltime: 1309
 contorul de legaturi: 1
-drepturi de acces user: rw-
-drepturi de acces grup: r--
-drepturi de acces altii: r--
+identificatorul utilizatorului: 501
+timpul ultimei modificari: 2023-11-19 22:37:31
+drepturi de acces user: RW-
+drepturi de acces grup: R--
+drepturi de acces altii: R--
 
-nume fisier: direct/imagine_3.bmp
-inaltime: 256
+nume fisier: imagine_3.bmp
 lungime: 256
-dimensiune: 196662
-identificatorul utilizatorului: 501
-timpul ultimei modificari: 19-11-2023
+inaltime: 256
 contorul de legaturi: 1
-drepturi de acces user: rw-
-drepturi de acces grup: r--
-drepturi de acces altii: r--
+identificatorul utilizatorului: 501
+timpul ultimei modificari: 2023-11-19 22:37:29
+drepturi de acces user: RW-
+drepturi de acces grup: R--
+drepturi de acces altii: R--
 
-nume fisier: direct/imagine_2.bmp
-inaltime: 426
+nume fisier: imagine_2.bmp
 lungime: 640
-dimensiune: 818058
-identificatorul utilizatorului: 501
-timpul ultimei modificari: 19-11-2023
+inaltime: 426
 contorul de legaturi: 1
-drepturi de acces user: rw-
-drepturi de acces grup: r--
-drepturi de acces altii: r--
-
-nume fisier: direct/nonim
-inaltime: 0
-lungime: 0
-dimensiune: 0
 identificatorul utilizatorului: 501
-timpul ultimei modificari: 20-11-2023
-contorul de legaturi: 1
-drepturi de acces user: rw-
-drepturi de acces grup: r--
-drepturi de acces altii: r--
+timpul ultimei modificari: 2023-11-19 22:37:27
+drepturi de acces user: RW-
+drepturi de acces grup: R--
+drepturi de acces altii: R--
 
-nume fisier: direct/imagine_1.bmp
-inaltime: 467
+nume fisier: nonim
+contorul de legaturi: 1
+identificatorul utilizatorului: 501
+timpul ultimei modificari: 2023-11-20 00:01:17
+drepturi de acces user: RW-
+drepturi de acces grup: R--
+drepturi de acces altii: R--
+
+nume fisier: imagine_1.bmp
 lungime: 467
-dimensiune: 219634
-identificatorul utilizatorului: 501
-timpul ultimei modificari: 19-11-2023
+inaltime: 467
 contorul de legaturi: 1
-drepturi de acces user: rwx
-drepturi de acces grup: r-x
-drepturi de acces altii: r-x
+identificatorul utilizatorului: 501
+timpul ultimei modificari: 2023-11-19 22:37:22
+drepturi de acces user: RWX
+drepturi de acces grup: R-X
+drepturi de acces altii: R-X
 
+nume director: drt
+identificatorul utilizatorului: faur
+drepturi de acces user: R
+drepturi de acces grup: R
+drepturi de acces altii: R
