@@ -1,10 +1,55 @@
-nume fisier: imagine.bmp
-inaltime: 1280
-lungime: 1920
-dimensiune: 7372938
+nume fisier: direct/imagine_4.bmp
+inaltime: 1309
+lungime: 762
+dimensiune: 2995046
 identificatorul utilizatorului: 501
-timpul ultimei modificari: 07-11-2023
+timpul ultimei modificari: 19-11-2023
 contorul de legaturi: 1
 drepturi de acces user: rw-
 drepturi de acces grup: r--
 drepturi de acces altii: r--
+
+nume fisier: direct/imagine_3.bmp
+inaltime: 256
+lungime: 256
+dimensiune: 196662
+identificatorul utilizatorului: 501
+timpul ultimei modificari: 19-11-2023
+contorul de legaturi: 1
+drepturi de acces user: rw-
+drepturi de acces grup: r--
+drepturi de acces altii: r--
+
+nume fisier: direct/imagine_2.bmp
+inaltime: 426
+lungime: 640
+dimensiune: 818058
+identificatorul utilizatorului: 501
+timpul ultimei modificari: 19-11-2023
+contorul de legaturi: 1
+drepturi de acces user: rw-
+drepturi de acces grup: r--
+drepturi de acces altii: r--
+
+nume fisier: direct/nonim
+inaltime: 0
+lungime: 0
+dimensiune: 0
+identificatorul utilizatorului: 501
+timpul ultimei modificari: 20-11-2023
+contorul de legaturi: 1
+drepturi de acces user: rw-
+drepturi de acces grup: r--
+drepturi de acces altii: r--
+
+nume fisier: direct/imagine_1.bmp
+inaltime: 467
+lungime: 467
+dimensiune: 219634
+identificatorul utilizatorului: 501
+timpul ultimei modificari: 19-11-2023
+contorul de legaturi: 1
+drepturi de acces user: rwx
+drepturi de acces grup: r-x
+drepturi de acces altii: r-x
+
