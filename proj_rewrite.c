@@ -36,7 +36,7 @@ void convert_to_grayscale(const char *input_path, const char *output_path) {
     exit(EXIT_FAILURE);
   }
 
-  if (read(input_file, original_image, size) < 0 ) {
+  if (read(input_file, original_image, size) < 0) {
     printf("%s\n", input_path);
     perror("convert_to_grayscale: Could not read image");
     free(original_image);
@@ -86,20 +86,18 @@ void convert_to_grayscale(const char *input_path, const char *output_path) {
 }
 
 void process_entry(const char *input_path, const struct dirent *entry,
-                   const char *output_dir) {
+                   const char *output_dir, const char *c) {
   char input_full_path[PATH_MAX];
   char output_file_path[PATH_MAX];
 
   snprintf(input_full_path, sizeof(input_full_path), "%s/%s", input_path,
            entry->d_name);
 
-  if (strstr(entry->d_name, ".bmp") !=
-      NULL) { // if it's a bmp file, create a child process for converting it to
-              // grayscale
+  if (strstr(entry->d_name, ".bmp") != NULL) { // if it's a bmp file, create a child process for converting it to grayscale
     int bmp_child_pid = fork();
     if (bmp_child_pid == 0) {
-      snprintf(output_file_path, sizeof(output_file_path), "%s/%s",
-               output_dir, entry->d_name);
+      snprintf(output_file_path, sizeof(output_file_path), "%s/%s", output_dir,
+               entry->d_name);
 
       convert_to_grayscale(input_full_path, output_file_path);
 
@@ -129,6 +127,50 @@ void process_entry(const char *input_path, const struct dirent *entry,
       perror("Could not get file stats: ");
       exit(EXIT_FAILURE);
     }
+    if (S_ISREG(buffer.st_mode) && strstr(entry->d_name, ".bmp") == NULL) {
+      // non-bmp file
+    int pipe_fds[2];
+    if (pipe(pipe_fds) < 0) {
+      perror("Could not create pipe");
+      exit(EXIT_FAILURE);
+    }
+
+    // Proces fiu pentru generare continut
+    int gen_content_pid = fork();
+    if (gen_content_pid == 0) {
+      // De exemplu, se poate apela un script extern pentru aceasta
+      close(pipe_fds[0]); // Inchidere capat de citire
+      char *content = "Continut generat\n"; // Aici apelez scriptul???? Ce continut generat? wtf
+      int content_length = strlen(content);
+      write(pipe_fds[1], content, content_length);
+      close(pipe_fds[1]); // Inchidere capat de scriere
+      exit(EXIT_SUCCESS);
+    }
+
+    // Proces fiu pentru calcul numar propozitii corecte
+    int calc_sentences_pid = fork();
+    if (calc_sentences_pid == 0) {
+      close(pipe_fds[1]); // Inchidere capat de scriere
+
+      // Citesc continutul din pipe si calculez numarul de propozitii corecte
+      // int num_sentences = ...; // Logica de calcul a propozitiilor corecte // Aici apelez scriptul????
+      // write(pipe_fds[0], &num_sentences, sizeof(num_sentences));
+
+      close(pipe_fds[0]); // Inchide capat de citire
+      exit(EXIT_SUCCESS);
+    }
+
+    close(pipe_fds[0]);
+    close(pipe_fds[1]);
+
+    // Astept terminarea proceselor fiu
+    int status;
+    waitpid(gen_content_pid, &status, 0);
+    printf("S-a încheiat procesul cu pid-ul %d și codul %d\n", gen_content_pid, WEXITSTATUS(status));
+
+    waitpid(calc_sentences_pid, &status, 0);
+    printf("S-a încheiat procesul cu pid-ul %d și codul %d\n", calc_sentences_pid, WEXITSTATUS(status));
+  }
 
     if (S_ISREG(buffer.st_mode)) { // if a regular file
       sprintf(sbuffer, "\nnume fisier: %s\n", entry->d_name);
@@ -300,8 +342,8 @@ void process_entry(const char *input_path, const struct dirent *entry,
 
   pid_t bmp_child_pid = fork();
   if (bmp_child_pid == 0) {
-    snprintf(output_file_path, sizeof(output_file_path), "%s/%s",
-             output_dir, entry->d_name);
+    snprintf(output_file_path, sizeof(output_file_path), "%s/%s", output_dir,
+             entry->d_name);
 
     // Child process for BMP conversion
     convert_to_grayscale(input_full_path, output_file_path);
@@ -322,9 +364,15 @@ void process_entry(const char *input_path, const struct dirent *entry,
 }
 
 int main(int argc, char *argv[]) {
-  if (argc != 3) {
-    fprintf(stderr, "Usage: %s <director_intrare> <director_iesire>\n",
+  if (argc != 4) {
+    fprintf(stderr, "Usage: %s <director_intrare> <director_iesire> <c>\n",
             argv[0]);
+    exit(EXIT_FAILURE);
+  }
+
+  char c = argv[3][0]; // Presupunem că argumentul <c> este un singur caracter
+  if (!isalnum(c)) {
+    fprintf(stderr, "Argumentul <c> trebuie să fie un caracter alfanumeric.\n");
     exit(EXIT_FAILURE);
   }
 
@@ -337,7 +385,7 @@ int main(int argc, char *argv[]) {
   struct dirent *entry;
   while ((entry = readdir(dir)) != NULL) {
     if (strcmp(entry->d_name, ".") != 0 && strcmp(entry->d_name, "..") != 0) {
-      process_entry(argv[1], entry, argv[2]);
+      process_entry(argv[1], entry, argv[2], argv[3]);
     }
   }
 
