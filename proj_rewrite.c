@@ -93,7 +93,9 @@ void process_entry(const char *input_path, const struct dirent *entry,
   snprintf(input_full_path, sizeof(input_full_path), "%s/%s", input_path,
            entry->d_name);
 
-  if (strstr(entry->d_name, ".bmp") != NULL) { // if it's a bmp file, create a child process for converting it to grayscale
+  if (strstr(entry->d_name, ".bmp") !=
+      NULL) { // if it's a bmp file, create a child process for converting it to
+              // grayscale
     int bmp_child_pid = fork();
     if (bmp_child_pid == 0) {
       snprintf(output_file_path, sizeof(output_file_path), "%s/%s", output_dir,
@@ -129,48 +131,87 @@ void process_entry(const char *input_path, const struct dirent *entry,
     }
     if (S_ISREG(buffer.st_mode) && strstr(entry->d_name, ".bmp") == NULL) {
       // non-bmp file
-    int pipe_fds[2];
-    if (pipe(pipe_fds) < 0) {
-      perror("Could not create pipe");
-      exit(EXIT_FAILURE);
+      int pipe_fds[2];
+      if (pipe(pipe_fds) < 0) {
+        perror("Could not create pipe");
+        exit(EXIT_FAILURE);
+      }
+
+      // Proces fiu pentru generare continut
+      int gen_content_pid = fork();
+      if (gen_content_pid == 0) {
+        // De exemplu, se poate apela un script extern pentru aceasta
+        close(pipe_fds[0]); // Inchidere capat de citire
+        char *content = "Continut generat\n";
+        int content_length = strlen(content);
+        write(pipe_fds[1], content, content_length);
+        close(pipe_fds[1]); // Inchidere capat de scriere
+        exit(EXIT_SUCCESS);
+      }
+
+      // Proces fiu pentru calcul numar propozitii corecte
+      int calc_sentences_pid = fork();
+      if (calc_sentences_pid == 0) {
+        close(pipe_fds[1]); // Inchide capat de scriere pentru prima conducta
+
+        int script_pipe_fds[2];
+        if (pipe(script_pipe_fds) < 0) {
+          perror("Could not create script pipe");
+          exit(EXIT_FAILURE);
+        }
+
+        int exec_pid = fork();
+        if (exec_pid == 0) {
+          // Redirect stdin to read from the first pipe
+          dup2(pipe_fds[0], STDIN_FILENO);
+          close(pipe_fds[0]); // Nu mai este nevoie de capatul original
+
+          // Redirect stdout to the second pipe
+          dup2(script_pipe_fds[1], STDOUT_FILENO);
+          close(script_pipe_fds[0]);
+          close(script_pipe_fds[1]); // Nu mai este nevoie de capatul de scriere
+                                     // dupa duplicare
+
+          // Prepare the argument list for the script
+          char c_arg[3] = "g"; // Presupunand ca <c> este un singur caracter
+          char *exec_args[] = {"./script.sh", c_arg, NULL};
+
+          // Execute the script
+          execvp(exec_args[0], exec_args);
+          perror("execvp failed");
+          exit(EXIT_FAILURE);
+        } else {
+          close(pipe_fds[0]); // Nu mai este nevoie de primul pipe in acest
+                              // proces
+          close(script_pipe_fds[1]); // Inchidem capatul de scriere al pipe-ului
+                                     // pentru script
+
+          // Citeste rezultatul scriptului din a doua conducta
+          int num_sentences;
+          read(script_pipe_fds[0], &num_sentences, sizeof(num_sentences));
+          close(script_pipe_fds[0]); // Inchidem capatul de citire al pipe-ului
+                                     // pentru script
+
+          // Trimite numarul de propozitii corecte inapoi la procesul parinte
+          write(pipe_fds[0], &num_sentences, sizeof(num_sentences));
+
+          exit(EXIT_SUCCESS);
+        }
+      }
+
+      close(pipe_fds[0]);
+      close(pipe_fds[1]);
+
+      // Astept terminarea proceselor fiu
+      int status;
+      waitpid(gen_content_pid, &status, 0);
+      printf("S-a încheiat procesul cu pid-ul %d și codul %d\n",
+             gen_content_pid, WEXITSTATUS(status));
+
+      waitpid(calc_sentences_pid, &status, 0);
+      printf("S-a încheiat procesul cu pid-ul %d și codul %d\n",
+             calc_sentences_pid, WEXITSTATUS(status));
     }
-
-    // Proces fiu pentru generare continut
-    int gen_content_pid = fork();
-    if (gen_content_pid == 0) {
-      // De exemplu, se poate apela un script extern pentru aceasta
-      close(pipe_fds[0]); // Inchidere capat de citire
-      char *content = "Continut generat\n"; // Aici apelez scriptul???? Ce continut generat? wtf
-      int content_length = strlen(content);
-      write(pipe_fds[1], content, content_length);
-      close(pipe_fds[1]); // Inchidere capat de scriere
-      exit(EXIT_SUCCESS);
-    }
-
-    // Proces fiu pentru calcul numar propozitii corecte
-    int calc_sentences_pid = fork();
-    if (calc_sentences_pid == 0) {
-      close(pipe_fds[1]); // Inchidere capat de scriere
-
-      // Citesc continutul din pipe si calculez numarul de propozitii corecte
-      // int num_sentences = ...; // Logica de calcul a propozitiilor corecte // Aici apelez scriptul????
-      // write(pipe_fds[0], &num_sentences, sizeof(num_sentences));
-
-      close(pipe_fds[0]); // Inchide capat de citire
-      exit(EXIT_SUCCESS);
-    }
-
-    close(pipe_fds[0]);
-    close(pipe_fds[1]);
-
-    // Astept terminarea proceselor fiu
-    int status;
-    waitpid(gen_content_pid, &status, 0);
-    printf("S-a încheiat procesul cu pid-ul %d și codul %d\n", gen_content_pid, WEXITSTATUS(status));
-
-    waitpid(calc_sentences_pid, &status, 0);
-    printf("S-a încheiat procesul cu pid-ul %d și codul %d\n", calc_sentences_pid, WEXITSTATUS(status));
-  }
 
     if (S_ISREG(buffer.st_mode)) { // if a regular file
       sprintf(sbuffer, "\nnume fisier: %s\n", entry->d_name);
