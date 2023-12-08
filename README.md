@@ -1,4 +1,4 @@
-# Project Name
+# Operating Systems Lab Work
 
 This is my project for the SO university course.
 
