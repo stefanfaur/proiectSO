@@ -1,0 +1,7 @@
+directory name: drt
+user id: 501
+time of last modification: Fri Dec  8 13:03:10 2023
+user permissions: RWX
+group permissions: R-X
+others permissions: R-X
+

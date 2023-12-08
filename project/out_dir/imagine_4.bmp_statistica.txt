@@ -1,0 +1,11 @@
+file name: imagine_4.bmp
+height: 1309
+width: 762
+size: 2995046
+user id: 501
+time of last modification: Fri Dec  8 13:22:15 2023
+number of hard links: 1
+user permissions: RW-
+group permissions: R--
+others permissions: R--
+
